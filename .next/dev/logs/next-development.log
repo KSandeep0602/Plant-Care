@@ -1,0 +1,7 @@
+[00:00:02.332] Server  LOG      ✓ Ready in 1569ms
+[00:00:10.656] Server  LOG      ○ Compiling / ...
+[00:00:26.556] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[00:00:27.458] Server  LOG     ⏱️ Cron running...
+[00:00:31.587] Browser ERROR   Received `%s` for a non-boolean attribute `%s`.
+
+If you want to write it to the DOM, pass a string instead: %s="%s" or %s={value.toString()}. true explain explain true explain

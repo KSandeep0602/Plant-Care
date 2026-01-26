@@ -1,0 +1,5 @@
+{
+  "/api/reminders/route": "app/api/reminders/route.js",
+  "/page": "app/page.js",
+  "/reminders/page": "app/reminders/page.js"
+}

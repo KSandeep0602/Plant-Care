@@ -1,0 +1,6 @@
+{
+  "version": 3,
+  "sources": [],
+  "sections": [
+    {"offset": {"line": 52, "column": 0}, "map": {"version":3,"sources":["file:///C:/Users/ksand/plant-care/app/api/send-email/route.ts"],"sourcesContent":["import { NextResponse } from \"next/server\";\r\nimport { Resend } from \"resend\";\r\n\r\nconst resend = new Resend(process.env.RESEND_API_KEY);\r\n\r\nexport async function POST(req: Request) {\r\n  try {\r\n    const { email, plantName } = await req.json();\r\n\r\n    const data = await resend.emails.send({\r\n      from: \"PlantCare <onboarding@resend.dev>\", // TEST sender\r\n      to: email,\r\n      subject: \"🌱 Plant Care Reminder\",\r\n      html: `<p>Time to take care of <b>${plantName}</b> 🌿</p>`,\r\n    });\r\n\r\n    return NextResponse.json({ success: true, data });\r\n  } catch (error) {\r\n    return NextResponse.json({ error }, { status: 500 });\r\n  }\r\n}\r\n"],"names":[],"mappings":";;;;AAAA;AACA;;;AAEA,MAAM,SAAS,IAAI,oJAAM,CAAC,QAAQ,GAAG,CAAC,cAAc;AAE7C,eAAe,KAAK,GAAY;IACrC,IAAI;QACF,MAAM,EAAE,KAAK,EAAE,SAAS,EAAE,GAAG,MAAM,IAAI,IAAI;QAE3C,MAAM,OAAO,MAAM,OAAO,MAAM,CAAC,IAAI,CAAC;YACpC,MAAM;YACN,IAAI;YACJ,SAAS;YACT,MAAM,CAAC,2BAA2B,EAAE,UAAU,WAAW,CAAC;QAC5D;QAEA,OAAO,gJAAY,CAAC,IAAI,CAAC;YAAE,SAAS;YAAM;QAAK;IACjD,EAAE,OAAO,OAAO;QACd,OAAO,gJAAY,CAAC,IAAI,CAAC;YAAE;QAAM,GAAG;YAAE,QAAQ;QAAI;IACpD;AACF","debugId":null}}]
+}
