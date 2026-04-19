@@ -1,26 +1,22 @@
-import "./globals.css";
-import Navbar from "./components/Navbar";
-import { ReminderProvider } from "./context/ReminderContext";
-import "@/app/lib/whatsappCron";
+import "./globals.css"
+
+import Providers from "./providers";
 
 export const metadata = {
-  title: "PlantCare",
-  description: "Plant care reminders",
-};
+  title: 'PlantCare',
+  description: 'Smart AI Plant Care System',
+}
 
 export default function RootLayout({
   children,
 }: {
-  children: React.ReactNode;
+  children: React.ReactNode
 }) {
   return (
     <html lang="en">
       <body>
-        <ReminderProvider>
-          <Navbar />
-          {children}
-        </ReminderProvider>
+        <Providers>{children}</Providers>
       </body>
     </html>
-  );
+  )
 }

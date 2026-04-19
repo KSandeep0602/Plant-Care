@@ -1,6 +1,0 @@
-{
-  "version": 3,
-  "sources": [],
-  "sections": [
-    {"offset": {"line": 18, "column": 0}, "map": {"version":3,"sources":["file:///C:/Users/ksand/OneDrive/Desktop/plant-care/app/page.tsx"],"sourcesContent":["export default function HomePage() {\r\n  return (\r\n    <main className=\"p-6 text-white\">\r\n      <h1 className=\"text-3xl font-bold\">Welcome to PlantCare 🌱</h1>\r\n      <p className=\"mt-4\">\r\n        Manage your plants, reminders, and care tips in one place.\r\n      </p>\r\n    </main>\r\n  );\r\n}\r\n"],"names":[],"mappings":";;;;;;AAAe,SAAS;IACtB,qBACE,8OAAC;QAAK,WAAU;;0BACd,8OAAC;gBAAG,WAAU;0BAAqB;;;;;;0BACnC,8OAAC;gBAAE,WAAU;0BAAO;;;;;;;;;;;;AAK1B","debugId":null}}]
-}

@@ -1,41 +1,54 @@
-import mongoose, { Schema } from "mongoose";
+import mongoose from "mongoose";
 
-const ReminderSchema = new Schema({
-  plantName: {
-    type: String,
-    required: true,
-  },
-  reminderDate: {
-    type: String, // YYYY-MM-DD
-    required: true,
-  },
-  completed: {
-    type: Boolean,
-    default: false,
-  },
-  completedAt: {
-    type: Date,
-    default: null,
-  },
+const ReminderSchema = new mongoose.Schema(
+  {
+    plantName: {
+      type: String,
+      required: true,
+    },
 
-  // ✅ WhatsApp tracking
-  phone: {
-    type: String,
-  },
-  whatsappSent: {
-    type: Boolean,
-    default: false,
-  },
-  whatsappSentAt: {
-    type: Date,
-    default: null,
-  },
+    // Date the user selected in the UI (used for display)
+    reminderDate: {
+      type: Date,
+    },
 
-  createdAt: {
-    type: Date,
-    default: Date.now,
-  },
-});
+    phone: {
+      type: String,
+      required: true,
+    },
 
-export default mongoose.models.Reminder ||
-  mongoose.model("Reminder", ReminderSchema);
+    // 🔁 Smart watering system
+    nextWateringDate: {
+      type: Date,
+      required: true,
+    },
+
+    frequencyPerWeek: {
+      type: Number,
+      required: true,
+      default: 1,
+    },
+
+    completed: {
+      type: Boolean,
+      default: false,
+    },
+
+    completedAt: {
+      type: Date,
+    },
+
+    whatsappSent: {
+      type: Boolean,
+      default: false,
+    },
+  },
+  { timestamps: true }
+);
+
+const Reminder = (
+  mongoose.models.Reminder || mongoose.model("Reminder", ReminderSchema)
+) as mongoose.Model<any>;
+
+export default Reminder;
+  

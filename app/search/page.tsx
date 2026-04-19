@@ -1,109 +1,149 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Image from "next/image";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useReminders } from "../context/ReminderContext";
+import Navbar from "../components/Navbar";
 
 type Plant = {
+  id: string;
   name: string;
   description: string;
   image: string;
 };
 
-const PLANTS: Plant[] = [
-  {
-    name: "Tulsi",
-    description: "A sacred plant known for boosting immunity.",
-    image: "/plants/tulsi.jpg",
-  },
-  {
-    name: "Money Plant",
-    description: "Low maintenance indoor plant.",
-    image: "/plants/money-plant.jpg",
-  },
-  {
-    name: "Neem",
-    description: "Medicinal plant with antibacterial properties.",
-    image: "/plants/neem.jpg",
-  },
-];
-
 export default function SearchPage() {
+  const router = useRouter();
   const [query, setQuery] = useState("");
+  const [plants, setPlants] = useState<Plant[]>([]);
   const [date, setDate] = useState("");
-  const [phone, setPhone] = useState("");
+  const [userPhone, setUserPhone] = useState<string | null>(null);
 
   const { addReminder } = useReminders();
 
-  const filteredPlants = PLANTS.filter((plant) =>
-    plant.name.toLowerCase().includes(query.toLowerCase())
-  );
+  // Load logged-in user phone once
+  useEffect(() => {
+    async function loadMe() {
+      try {
+        const res = await fetch("/api/auth/me");
+        const data = await res.json();
+        if (!data?.user?.phone) {
+          router.push("/login");
+          return;
+        }
+        setUserPhone(String(data.user.phone));
+      } catch {
+        router.push("/login");
+      }
+    }
+
+    loadMe();
+  }, [router]);
+
+  // 🔥 NEW: Fetch plants from backend API
+  const searchPlants = async (value: string) => {
+    setQuery(value);
+
+    if (!value) {
+      setPlants([]);
+      return;
+    }
+
+    try {
+      const res = await fetch(`/api/plants/search?q=${value}`);
+      const data = await res.json();
+      setPlants(data.plants || []);
+    } catch (error) {
+      console.error("Search error:", error);
+    }
+  };
 
   return (
-    <div style={{ padding: "24px" }}>
-      <h1 style={{ fontSize: "28px", fontWeight: "bold" }}>
-        Search Plants 🌱
+    <>
+    <Navbar />
+    <div className="min-h-screen bg-black px-10 py-10 text-white">
+      {/* Title */}
+      <h1 className="text-3xl font-extrabold text-green-500">
+        Discover Plants 🌱
       </h1>
 
-      <p style={{ color: "#9ca3af", marginBottom: "16px" }}>
-        Search plants by name.
+      <p className="text-gray-300 mb-8">
+        Search plants and schedule WhatsApp care reminders
       </p>
 
-      <div style={{ display: "flex", gap: "12px", marginBottom: "24px" }}>
+      {/* Inputs */}
+      <div className="flex flex-wrap gap-4 mb-10">
         <input
-          type="text"
           placeholder="Search plant..."
           value={query}
-          onChange={(e) => setQuery(e.target.value)}
+          onChange={(e) => searchPlants(e.target.value)}
+          className="px-4 py-2 rounded-full bg-white text-black border border-gray-300 outline-none"
         />
 
         <input
           type="date"
           value={date}
           onChange={(e) => setDate(e.target.value)}
-        />
-
-        <input
-          type="text"
-          placeholder="WhatsApp number (+91...)"
-          value={phone}
-          onChange={(e) => setPhone(e.target.value)}
+          className="px-4 py-2 rounded-full bg-white text-black border border-gray-300 outline-none"
         />
       </div>
 
-      <div style={{ display: "flex", flexWrap: "wrap", gap: "20px" }}>
-        {filteredPlants.map((plant) => (
-          <div key={plant.name} style={{ width: 320 }}>
-            <Image
-              src={plant.image}
-              alt={plant.name}
-              width={320}
-              height={180}
-            />
+      {/* Cards */}
+      <div className="flex flex-wrap gap-8">
+        {plants.map((plant) => (
+          <div
+            key={plant.id}
+            className="w-[320px] bg-white rounded-2xl overflow-hidden shadow-lg text-black"
+          >
+            <Link href={`/plant/${plant.id}`}>
+              <Image
+                src={plant.image}
+                alt={plant.name}
+                width={320}
+                height={180}
+                className="object-cover cursor-pointer hover:opacity-90"
+              />
+            </Link>
 
-            <h3>{plant.name}</h3>
-            <p>{plant.description}</p>
+            <div className="p-5">
+              <Link href={`/plant/${plant.id}`}>
+                <h3 className="text-xl font-bold text-green-600 cursor-pointer">
+                  {plant.name}
+                </h3>
+              </Link>
 
-            <button
-              onClick={async () => {
-                if (!date || !phone) {
-                  alert("Please select date and enter WhatsApp number");
-                  return;
-                }
+              <p className="text-gray-700 my-2">
+                {plant.description}
+              </p>
 
-                // ✅ ONLY SAVE — CRON WILL SEND WHATSAPP
-                await addReminder(plant.name, date, phone);
+              <button
+                onClick={async () => {
+                  if (!date) {
+                    alert("Please select a date");
+                    return;
+                  }
 
-                setDate("");
-                setPhone("");
-                alert("✅ WhatsApp reminder scheduled!");
-              }}
-            >
-              ⏰ Add WhatsApp Reminder
-            </button>
+                  if (!userPhone) {
+                    alert("Please log in again");
+                    router.push("/login");
+                    return;
+                  }
+
+                  await addReminder(plant.name, date, userPhone);
+                  setDate("");
+                  alert("🌿 WhatsApp reminder scheduled!");
+                }}
+                className="w-full mt-4 py-3 rounded-full bg-green-600 text-white font-bold hover:bg-green-700"
+              >
+                ⏰ Add WhatsApp Reminder
+              </button>
+            </div>
           </div>
         ))}
       </div>
     </div>
+    </>
   );
 }

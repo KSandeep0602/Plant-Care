@@ -1,6 +1,0 @@
-{
-  "version": 3,
-  "sources": [],
-  "sections": [
-    {"offset": {"line": 18, "column": 0}, "map": {"version":3,"sources":["file:///C:/Users/ksand/plant-care/app/reminders/page.tsx"],"sourcesContent":["export default function RemindersPage() {\r\n  return (\r\n    <main className=\"p-6 text-white\">\r\n      <h1 className=\"text-2xl font-semibold\">Your Reminders ⏰</h1>\r\n      <p className=\"mt-2\">Manage watering and care reminders.</p>\r\n    </main>\r\n  );\r\n}\r\n"],"names":[],"mappings":";;;;;;AAAe,SAAS;IACtB,qBACE,8OAAC;QAAK,WAAU;;0BACd,8OAAC;gBAAG,WAAU;0BAAyB;;;;;;0BACvC,8OAAC;gBAAE,WAAU;0BAAO;;;;;;;;;;;;AAG1B","debugId":null}}]
-}
