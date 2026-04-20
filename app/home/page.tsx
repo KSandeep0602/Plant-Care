@@ -2,9 +2,10 @@
 
 import { useEffect, useState } from "react";
 import Navbar from "../components/Navbar";
+import { plantsData } from "../lib/plantsData";
 
 export default function HomePage() {
-  const [reminders, setReminders] = useState([]);
+  const [reminders, setReminders] = useState<any[]>([]);
 
   useEffect(() => {
     fetch("/api/reminders")
@@ -12,12 +13,15 @@ export default function HomePage() {
       .then((data) => setReminders(data));
   }, []);
 
-  const today = new Date();
+  const getReminderDate = (r: any) => {
+    const dateValue = r.nextWateringDate ?? r.reminderDate;
+    const parsed = dateValue ? new Date(dateValue) : null;
+    return parsed && !Number.isNaN(parsed.getTime()) ? parsed : null;
+  };
 
   const todaysWatering = reminders.filter((r: any) => {
-    if (!r.nextWateringDate) return false;
-
-    const d = new Date(r.nextWateringDate);
+    const d = getReminderDate(r);
+    if (!d) return false;
 
     const start = new Date();
     start.setHours(0, 0, 0, 0);
@@ -27,6 +31,21 @@ export default function HomePage() {
 
     return d >= start && d <= end;
   });
+
+  const getPlantKey = (plantName: string) =>
+    plantName.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
+
+  const feedingCount = reminders.filter((r: any) => {
+    const key = getPlantKey(r.plantName || "");
+    const care = plantsData[key];
+    return care && care.fertilizer && !care.fertilizer.toLowerCase().includes("no fertilizer");
+  }).length;
+
+  const sunlightCount = reminders.filter((r: any) => {
+    const key = getPlantKey(r.plantName || "");
+    const care = plantsData[key];
+    return care ? Boolean(care.sunlight) : true;
+  }).length;
 
   return (
     <div className="min-h-screen bg-black text-white">
@@ -61,12 +80,12 @@ export default function HomePage() {
 
         <div className="bg-yellow-200 text-black p-5 rounded-xl">
           🌱 <b>Feeding</b>
-          <p>Coming soon</p>
+          <p>{feedingCount} plants need feeding</p>
         </div>
 
         <div className="bg-gray-300 text-black p-5 rounded-xl">
           ☀️ <b>Sunlight</b>
-          <p>Coming soon</p>
+          <p>{sunlightCount} plants need sunlight</p>
         </div>
 
       </div>
@@ -88,8 +107,8 @@ export default function HomePage() {
               🌿 <b>{r.plantName}</b>
               <p className="text-sm text-gray-400 mt-2">
                 Next watering:{" "}
-                {r.nextWateringDate
-                  ? new Date(r.nextWateringDate).toDateString()
+                {getReminderDate(r)
+                  ? getReminderDate(r)!.toDateString()
                   : "N/A"}
               </p>
             </div>

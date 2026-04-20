@@ -18,6 +18,7 @@ export default function SearchPage() {
   const router = useRouter();
   const [query, setQuery] = useState("");
   const [plants, setPlants] = useState<Plant[]>([]);
+  const [recentPlants, setRecentPlants] = useState<Plant[]>([]);
   const [date, setDate] = useState("");
   const [userPhone, setUserPhone] = useState<string | null>(null);
 
@@ -42,6 +43,40 @@ export default function SearchPage() {
     loadMe();
   }, [router]);
 
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+
+    const stored = window.localStorage.getItem("recentlySearchedPlants");
+    if (!stored) return;
+
+    try {
+      const parsed: Plant[] = JSON.parse(stored);
+      setRecentPlants(parsed);
+    } catch {
+      // ignore invalid values
+    }
+  }, []);
+
+  const persistRecentPlants = (plantsToAdd: Plant[]) => {
+    setRecentPlants((current) => {
+      const merged = [
+        ...plantsToAdd,
+        ...current.filter(
+          (existing) => !plantsToAdd.some((item) => item.id === existing.id)
+        ),
+      ].slice(0, 6);
+
+      if (typeof window !== "undefined") {
+        window.localStorage.setItem(
+          "recentlySearchedPlants",
+          JSON.stringify(merged)
+        );
+      }
+
+      return merged;
+    });
+  };
+
   // 🔥 NEW: Fetch plants from backend API
   const searchPlants = async (value: string) => {
     setQuery(value);
@@ -54,7 +89,9 @@ export default function SearchPage() {
     try {
       const res = await fetch(`/api/plants/search?q=${value}`);
       const data = await res.json();
-      setPlants(data.plants || []);
+      const results = data.plants || [];
+      setPlants(results);
+      persistRecentPlants(results.slice(0, 3));
     } catch (error) {
       console.error("Search error:", error);
     }
@@ -89,6 +126,40 @@ export default function SearchPage() {
           className="px-4 py-2 rounded-full bg-white text-black border border-gray-300 outline-none"
         />
       </div>
+
+      {recentPlants.length > 0 && (
+        <div className="mb-10">
+          <h2 className="text-2xl font-bold text-white mb-4">
+            Recently searched plants
+          </h2>
+          <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
+            {recentPlants.map((plant) => (
+              <Link
+                key={plant.id}
+                href={`/plant/${plant.id}`}
+                className="group block overflow-hidden rounded-2xl bg-white text-black shadow-lg transition hover:-translate-y-1"
+              >
+                <div className="relative h-48 w-full overflow-hidden">
+                  <Image
+                    src={plant.image}
+                    alt={plant.name}
+                    fill
+                    className="object-cover transition duration-300 group-hover:scale-105"
+                  />
+                </div>
+                <div className="p-5">
+                  <h3 className="text-xl font-bold text-green-600">
+                    {plant.name}
+                  </h3>
+                  <p className="text-gray-700 mt-2 line-clamp-3">
+                    {plant.description}
+                  </p>
+                </div>
+              </Link>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* Cards */}
       <div className="flex flex-wrap gap-8">
