@@ -162,20 +162,21 @@ export default function SearchPage() {
       )}
 
       {/* Cards */}
-      <div className="flex flex-wrap gap-8">
+      <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
         {plants.map((plant) => (
           <div
             key={plant.id}
-            className="w-[320px] bg-white rounded-2xl overflow-hidden shadow-lg text-black"
+            className="group block overflow-hidden rounded-2xl bg-white text-black shadow-lg transition hover:-translate-y-1"
           >
             <Link href={`/plant/${plant.id}`}>
-              <Image
-                src={plant.image}
-                alt={plant.name}
-                width={320}
-                height={180}
-                className="object-cover cursor-pointer hover:opacity-90"
-              />
+              <div className="relative h-48 w-full overflow-hidden">
+                <Image
+                  src={plant.image}
+                  alt={plant.name}
+                  fill
+                  className="object-cover transition duration-300 group-hover:scale-105"
+                />
+              </div>
             </Link>
 
             <div className="p-5">
@@ -185,7 +186,7 @@ export default function SearchPage() {
                 </h3>
               </Link>
 
-              <p className="text-gray-700 my-2">
+              <p className="text-gray-700 mt-2 line-clamp-3">
                 {plant.description}
               </p>
 

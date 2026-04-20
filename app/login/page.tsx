@@ -28,17 +28,33 @@ export default function LoginPage() {
 
   // 📩 Send OTP
   const sendOtp = async () => {
+    // Validate phone number format
     if (!phone) {
-      alert("Enter phone number");
+      alert("Please enter your phone number");
+      return;
+    }
+
+    if (phone.length !== 10) {
+      alert("Please enter exactly 10 digits");
+      return;
+    }
+
+    // Additional validation - ensure all characters are digits
+    const phoneRegex = /^\d{10}$/;
+    if (!phoneRegex.test(phone)) {
+      alert("Phone number can only contain digits");
       return;
     }
 
     setLoading(true);
 
+    // Format phone number with +91 prefix for API
+    const formattedPhone = `+91${phone}`;
+
     const res = await fetch("/api/auth/request-otp", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ phone }),
+      body: JSON.stringify({ phone: formattedPhone }),
     });
 
     const data = await res.json().catch(() => ({}));
@@ -61,11 +77,14 @@ export default function LoginPage() {
       return;
     }
 
+    // Format phone number with +91 prefix for API (same as used for sending OTP)
+    const formattedPhone = `+91${phone}`;
+
     const res = await fetch("/api/auth/verify-otp", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        phone,
+        phone: formattedPhone,
         otp,
       }),
     });
@@ -90,6 +109,14 @@ export default function LoginPage() {
     }
   };
 
+  // Handle phone number input - only allow digits and limit to 10 characters
+  const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value.replace(/\D/g, ''); // Remove all non-digits
+    if (value.length <= 10) {
+      setPhone(value);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-black flex items-center justify-center">
       <form
@@ -104,9 +131,12 @@ export default function LoginPage() {
           <>
             <input
               type="tel"
-              placeholder="+91XXXXXXXXXX"
+              placeholder="Enter 10-digit phone number"
               value={phone}
-              onChange={(e) => setPhone(e.target.value)}
+              onChange={handlePhoneChange}
+              maxLength={10}
+              pattern="[0-9]{10}"
+              inputMode="numeric"
               className="w-full border px-3 py-2 rounded mb-4"
             />
 

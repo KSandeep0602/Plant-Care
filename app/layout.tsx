@@ -1,6 +1,7 @@
 import "./globals.css"
 
 import Providers from "./providers";
+import Footer from "./components/Footer";
 
 export const metadata = {
   title: 'PlantCare',
@@ -14,8 +15,9 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body>
+      <body className="flex flex-col min-h-screen">
         <Providers>{children}</Providers>
+        <Footer />
       </body>
     </html>
   )

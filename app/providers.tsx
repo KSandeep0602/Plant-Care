@@ -7,5 +7,9 @@ export default function Providers({
 }: {
   children: React.ReactNode;
 }) {
-  return <ReminderProvider>{children}</ReminderProvider>;
+  return (
+    <ReminderProvider>
+      <div className="flex-1">{children}</div>
+    </ReminderProvider>
+  );
 }

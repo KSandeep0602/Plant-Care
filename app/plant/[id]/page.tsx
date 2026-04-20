@@ -1,13 +1,39 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
+import { useReminders } from "../../context/ReminderContext";
+import Navbar from "../../components/Navbar";
 
 export default function PlantDetails() {
   const params = useParams();
+  const router = useRouter();
   const id = params?.id as string;
 
   const [plant, setPlant] = useState<any>(null);
+  const [date, setDate] = useState("");
+  const [userPhone, setUserPhone] = useState<string | null>(null);
+
+  const { addReminder } = useReminders();
+
+  // Load logged-in user phone once
+  useEffect(() => {
+    async function loadMe() {
+      try {
+        const res = await fetch("/api/auth/me");
+        const data = await res.json();
+        if (!data?.user?.phone) {
+          router.push("/login");
+          return;
+        }
+        setUserPhone(String(data.user.phone));
+      } catch {
+        router.push("/login");
+      }
+    }
+
+    loadMe();
+  }, [router]);
 
   useEffect(() => {
     if (!id) return;
@@ -76,99 +102,156 @@ export default function PlantDetails() {
   );
 
   return (
-    <div className="min-h-screen bg-black flex justify-center p-10">
-      <div className="bg-white rounded-2xl w-[750px] overflow-hidden text-black">
+    <>
+      <Navbar />
+      <div className="min-h-screen bg-black flex justify-center p-10 pt-20">
+        <div className="bg-white rounded-2xl w-[750px] overflow-hidden text-black">
 
-        {/* IMAGE */}
-        {plant.image ? (
-          <img
-            src={plant.image}
-            alt={plant.common_name || "Plant Image"}
-            className="w-full h-[400px] object-cover"
-          />
-        ) : (
-          <div className="h-[400px] flex items-center justify-center bg-gray-200">
-            No Image Available
-          </div>
-        )}
-
-        <div className="p-8">
-
-          {/* TITLE */}
-          <h1 className="text-3xl font-bold text-green-600">
-            {plant.common_name || "Unknown Plant"}
-          </h1>
-
-          {/* DESCRIPTION */}
-          <p className="mt-4 text-gray-700 leading-relaxed">
-            {plant.description || "No description available."}
-          </p>
-
-          {/* FIRST ROW */}
-          <div className="grid grid-cols-2 gap-4 mt-6">
-
-            <div className="bg-blue-100 p-4 rounded-xl">
-              <h3 className="font-semibold text-blue-700">💧 Watering</h3>
-              <p className="mt-1">{plant.watering}</p>
+          {/* IMAGE */}
+          {plant.image ? (
+            <img
+              src={plant.image}
+              alt={plant.common_name || "Plant Image"}
+              className="w-full h-[400px] object-cover"
+            />
+          ) : (
+            <div className="h-[400px] flex items-center justify-center bg-gray-200">
+              No Image Available
             </div>
+          )}
 
-            <div className="bg-green-100 p-4 rounded-xl">
-              <h3 className="font-semibold text-green-700">🌿 Season</h3>
-              <p className="mt-1">Current Season: {plant.season}</p>
-            </div>
+          <div className="p-8">
 
-          </div>
+            {/* TITLE */}
+            <h1 className="text-3xl font-bold text-green-600">
+              {plant.common_name || "Unknown Plant"}
+            </h1>
 
-          {/* SECOND ROW */}
-          <div className="grid grid-cols-2 gap-4 mt-4">
-
-            <div className="bg-green-200 p-4 rounded-xl">
-              <h3 className="font-semibold text-green-800">🌡 Temperature</h3>
-              <p className="mt-1">18°C - 26°C</p>
-            </div>
-
-
-            <div className="bg-yellow-200 p-4 rounded-xl">
-              <h3 className="font-semibold text-yellow-800">☀ Sunlight</h3>
-              <p className="mt-1">Bright indirect light</p>
-            </div>
-
-            <div className="bg-purple-200 p-4 rounded-xl">
-              <h3 className="font-semibold text-purple-800">🌱 Fertilizer</h3>
-              <p className="mt-1">Once a month</p>
-            </div>
-            <div className="bg-indigo-200 p-4 rounded-xl col-span-2">
-              <h3 className="font-semibold text-indigo-800">🌿 Category</h3>
-              <p className="mt-1">{plant.category}</p>
-            </div>
-
-
-          </div>
-
-
-          <div className="mt-6 bg-green-50 p-5 rounded-xl">
-            <h3 className="font-semibold text-green-700">🤖 AI Care Summary</h3>
-            <p className="mt-2 text-gray-700">{plant.summary}</p>
-          </div>
-          {/* FAMILY INFO */}
-          <div className="mt-6">
-            <p>
-              <strong>Family:</strong>{" "}
-              {typeof plant.family === "object"
-                ? plant.family?.name
-                : plant.family || "Not available"}
+            {/* DESCRIPTION */}
+            <p className="mt-4 text-gray-700 leading-relaxed">
+              {plant.description || "No description available."}
             </p>
 
-            <p>
-              <strong>Scientific Name:</strong>{" "}
-              {typeof plant.scientific_name === "object"
-                ? plant.scientific_name?.name
-                : plant.scientific_name || "Not available"}
-            </p>
-          </div>
+            {/* FIRST ROW */}
+            <div className="grid grid-cols-2 gap-4 mt-6">
 
+              <div className="bg-blue-100 p-4 rounded-xl">
+                <h3 className="font-semibold text-blue-700">💧 Watering</h3>
+                <p className="mt-1">{plant.watering}</p>
+              </div>
+
+              <div className="bg-green-100 p-4 rounded-xl">
+                <h3 className="font-semibold text-green-700">🌿 Season</h3>
+                <p className="mt-1">Current Season: {plant.season}</p>
+              </div>
+
+            </div>
+
+            {/* SECOND ROW */}
+            <div className="grid grid-cols-2 gap-4 mt-4">
+
+              <div className="bg-green-200 p-4 rounded-xl">
+                <h3 className="font-semibold text-green-800">🌡 Temperature</h3>
+                <p className="mt-1">18°C - 26°C</p>
+              </div>
+
+              <div className="bg-yellow-200 p-4 rounded-xl">
+                <h3 className="font-semibold text-yellow-800">☀ Sunlight</h3>
+                <p className="mt-1">Bright indirect light</p>
+              </div>
+
+              <div className="bg-purple-200 p-4 rounded-xl">
+                <h3 className="font-semibold text-purple-800">🌱 Fertilizer</h3>
+                <p className="mt-1">Once a month</p>
+              </div>
+
+              <div className="bg-indigo-200 p-4 rounded-xl col-span-2">
+                <h3 className="font-semibold text-indigo-800">🌿 Category</h3>
+                <p className="mt-1">{plant.category}</p>
+              </div>
+
+            </div>
+
+            <div className="mt-6 bg-green-50 p-5 rounded-xl">
+              <h3 className="font-semibold text-green-700">🤖 AI Care Summary</h3>
+              <p className="mt-2 text-gray-700">{plant.summary}</p>
+            </div>
+
+            {/* FAMILY INFO */}
+            <div className="mt-6">
+              <p>
+                <strong>Family:</strong>{" "}
+                {typeof plant.family === "object"
+                  ? plant.family?.name
+                  : plant.family || "Not available"}
+              </p>
+
+              <p>
+                <strong>Scientific Name:</strong>{" "}
+                {typeof plant.scientific_name === "object"
+                  ? plant.scientific_name?.name
+                  : plant.scientific_name || "Not available"}
+              </p>
+            </div>
+
+            {/* WHATSAPP REMINDER SECTION */}
+            <div className="mt-8 bg-gradient-to-r from-green-50 to-blue-50 p-6 rounded-xl border border-green-200">
+              <h3 className="text-xl font-bold text-green-700 mb-4">
+                ⏰ Set WhatsApp Reminder
+              </h3>
+              <p className="text-gray-600 mb-4">
+                Get automated WhatsApp reminders for watering this plant. Choose your preferred start date.
+              </p>
+
+              <div className="flex flex-col sm:flex-row gap-4 items-end">
+                <div className="flex-1">
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Select Start Date
+                  </label>
+                  <input
+                    type="date"
+                    value={date}
+                    onChange={(e) => setDate(e.target.value)}
+                    min={new Date().toISOString().split('T')[0]}
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                  />
+                </div>
+
+                <button
+                  onClick={async () => {
+                    if (!date) {
+                      alert("Please select a start date for reminders");
+                      return;
+                    }
+
+                    if (!userPhone) {
+                      alert("Please log in to set reminders");
+                      router.push("/login");
+                      return;
+                    }
+
+                    try {
+                      await addReminder(plant.common_name || plant.name, date, userPhone);
+                      setDate("");
+                      alert(`🌿 WhatsApp reminder scheduled for ${plant.common_name || plant.name}!`);
+                    } catch (error) {
+                      alert("Failed to schedule reminder. Please try again.");
+                    }
+                  }}
+                  className="px-6 py-3 bg-green-600 text-white font-bold rounded-lg hover:bg-green-700 transition-colors shadow-md hover:shadow-lg"
+                >
+                  📱 Schedule Reminder
+                </button>
+              </div>
+
+              <div className="mt-4 text-sm text-gray-500">
+                💡 You'll receive WhatsApp messages with care instructions based on the season and plant type.
+              </div>
+            </div>
+
+          </div>
         </div>
       </div>
-    </div>
+    </>
   );
 }

@@ -12,6 +12,34 @@ function normalizeWhatsAppAddress(value: string) {
   return v.startsWith("whatsapp:") ? v : `whatsapp:${v}`;
 }
 
+// Check if we already sent a reminder for this plant today
+function hasReminderBeenSentToday(lastSentDate: Date | null): boolean {
+  if (!lastSentDate) return false;
+
+  const today = new Date();
+  const lastSent = new Date(lastSentDate);
+
+  return (
+    today.getFullYear() === lastSent.getFullYear() &&
+    today.getMonth() === lastSent.getMonth() &&
+    today.getDate() === lastSent.getDate()
+  );
+}
+
+// Check if we already sent a reminder for this plant today
+function hasReminderBeenSentToday(lastSentDate: Date | null): boolean {
+  if (!lastSentDate) return false;
+
+  const today = new Date();
+  const lastSent = new Date(lastSentDate);
+
+  return (
+    today.getFullYear() === lastSent.getFullYear() &&
+    today.getMonth() === lastSent.getMonth() &&
+    today.getDate() === lastSent.getDate()
+  );
+}
+
 export async function GET(req: Request) {
   try {
     await connectDB();
@@ -66,6 +94,12 @@ export async function GET(req: Request) {
         reminder.nextWateringDate &&
         today >= new Date(reminder.nextWateringDate)
       ) {
+        // Check if we already sent a reminder for this plant today
+        if (hasReminderBeenSentToday(reminder.lastReminderSentDate)) {
+          console.log(`⏰ Skipping ${reminder.plantName} - already sent reminder today`);
+          continue;
+        }
+
         dueCount++;
         console.log(`🔔 Sending reminder for ${reminder.plantName}`);
 
@@ -112,6 +146,7 @@ export async function GET(req: Request) {
 
         reminder.nextWateringDate = newNextDate;
         reminder.whatsappSent = true;
+        reminder.lastReminderSentDate = new Date();
 
         await reminder.save();
       }

@@ -10,6 +10,20 @@ function normalizeWhatsAppAddress(value: string) {
   return v.startsWith("whatsapp:") ? v : `whatsapp:${v}`;
 }
 
+// Check if we already sent a reminder for this plant today
+function hasReminderBeenSentToday(lastSentDate: Date | null): boolean {
+  if (!lastSentDate) return false;
+
+  const today = new Date();
+  const lastSent = new Date(lastSentDate);
+
+  return (
+    today.getFullYear() === lastSent.getFullYear() &&
+    today.getMonth() === lastSent.getMonth() &&
+    today.getDate() === lastSent.getDate()
+  );
+}
+
 let isCronRunning = false; // 🔥 Prevent multiple cron instances
 
 export function startCron() {
@@ -42,6 +56,12 @@ export function startCron() {
           reminder.nextWateringDate &&
           now >= new Date(reminder.nextWateringDate)
         ) {
+          // Check if we already sent a reminder for this plant today
+          if (hasReminderBeenSentToday(reminder.lastReminderSentDate)) {
+            console.log(`⏰ Skipping ${reminder.plantName} - already sent reminder today`);
+            continue;
+          }
+
           console.log(`🔔 Attempting reminder for ${reminder.plantName}`);
 
           const from = normalizeWhatsAppAddress(TWILIO_WHATSAPP_FROM);
@@ -68,6 +88,7 @@ export function startCron() {
 
             reminder.nextWateringDate = newNextDate;
             reminder.whatsappSent = true;
+            reminder.lastReminderSentDate = new Date();
             await reminder.save();
 
           } catch (twilioError: any) {

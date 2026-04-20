@@ -10,8 +10,17 @@ export async function POST(req: Request) {
   const { phone, otp } = await req.json();
 
   if (!phone || typeof phone !== "string") {
-    return NextResponse.json({ error: "Phone is required" }, { status: 400 });
+    return NextResponse.json({ error: "Phone number is required" }, { status: 400 });
   }
+
+  // Validate phone number format: should be +91 followed by exactly 10 digits
+  const phoneRegex = /^\+91\d{10}$/;
+  if (!phoneRegex.test(phone)) {
+    return NextResponse.json({
+      error: "Invalid phone number format"
+    }, { status: 400 });
+  }
+
   if (!otp || typeof otp !== "string") {
     return NextResponse.json({ error: "OTP is required" }, { status: 400 });
   }

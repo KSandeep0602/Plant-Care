@@ -22,6 +22,7 @@ export async function connectDB() {
   cached.conn = await cached.promise;
   return cached.conn;
 }
-import { startWhatsAppCron } from "./whatsappCron";
 
-startWhatsAppCron();
+// Old WhatsApp cron disabled - using app/lib/cron.ts instead
+// import { startWhatsAppCron } from "./whatsappCron";
+// startWhatsAppCron();
