@@ -7,6 +7,11 @@ const ReminderSchema = new mongoose.Schema(
       required: true,
     },
 
+    userId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+    },
+
     // Date the user selected in the UI (used for display)
     reminderDate: {
       type: Date,

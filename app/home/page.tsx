@@ -46,9 +46,7 @@ export default function HomePage() {
           Smart AI-powered plant care assistant
         </p>
       </div>
-      <div className="bg-red-500 text-white p-10">
-  Tailwind is working
-</div>
+     
       {/* DAILY TASKS */}
       <h2 className="text-2xl font-bold text-green-400 mb-4">
         Daily Tasks
