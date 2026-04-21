@@ -89,13 +89,12 @@ export default function SearchPage() {
     });
   };
 
-  // 🔥 NEW: Fetch plants from backend API with debouncing
+  // Fetch plants from backend API
   const searchPlants = useCallback(async (value: string) => {
-    setQuery(value);
-
     if (!value.trim()) {
       setPlants([]);
       setSearchError(null);
+      setIsLoading(false);
       return;
     }
 
@@ -120,9 +119,26 @@ export default function SearchPage() {
     }
   }, []);
 
+  useEffect(() => {
+    const trimmed = query.trim();
+
+    if (!trimmed) {
+      setPlants([]);
+      setSearchError(null);
+      setIsLoading(false);
+      return;
+    }
+
+    const timeout = window.setTimeout(() => {
+      searchPlants(trimmed);
+    }, 350);
+
+    return () => window.clearTimeout(timeout);
+  }, [query, searchPlants]);
+
   // Filter and sort plants
   const filteredAndSortedPlants = useMemo(() => {
-    let filtered = plants;
+    let filtered = [...plants];
 
     // Apply difficulty filter
     if (filter !== "all") {
@@ -243,7 +259,7 @@ export default function SearchPage() {
         </div>
       </div>
 
-      {recentPlants.length > 0 && (
+      {!query.trim() && recentPlants.length > 0 && (
         <div className="mb-10">
           <h2 className="text-2xl font-bold text-white mb-4">
             Recently searched plants

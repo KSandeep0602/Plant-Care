@@ -44,3 +44,4 @@ next-env.d.ts
 # Optional: local database / uploads (if you use)
 data/
 uploads/
+Gitcommand.txt

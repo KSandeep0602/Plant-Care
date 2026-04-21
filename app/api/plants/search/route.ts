@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { categoryCare, specificCare } from "../../../data/plantCare";
+import { categoryCare, specificCare } from "@/data/plantCare";
 
 const API_KEY = process.env.TREFLE_API_KEY!;
 

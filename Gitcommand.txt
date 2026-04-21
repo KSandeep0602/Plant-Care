@@ -1,9 +1,0 @@
-#pushing code to repo
-git status
-git add .
-git commit -m "message"
-git push
-
-#Removing changes
-git stash
-//

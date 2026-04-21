@@ -1,0 +1,60 @@
+0:00:02 Tab4 PageLoad #ntp
+0:00:02 Tab5 PageLoad #ntp
+0:00:02 Tab6 PageLoad #ntp
+0:00:02 Tab1 StartNav13 #renderer-script #auto_subframe
+0:00:02 Tab6 StartNav14 #typed
+0:00:02 Tab6 FinishNav14 ERR_ABORTED
+0:00:02 Tab6 StartNav15 #typed
+0:00:02 Tab2 StartNav16 #renderer-script #auto_subframe
+0:00:02 Tab6 FinishNav15 ERR_ABORTED
+0:00:02 Tab6 StartNav17 #typed
+0:00:02 Tab2 FinishNav16
+0:00:02 Tab1 FinishNav13
+0:00:02 Tab3 StartNav18 #renderer-script #auto_subframe
+0:00:02 Tab4 StartNav19 #renderer-script #auto_subframe
+0:00:02 Tab1 PageLoad
+0:00:02 Tab2 PageLoad
+0:00:02 Tab4 FinishNav19
+0:00:02 Tab3 FinishNav18
+0:00:02 Tab5 StartNav20 #renderer-script #auto_subframe
+0:00:02 Tab6 StartNav21 #renderer-script #auto_subframe
+0:00:02 Tab4 PageLoad
+0:00:02 Tab3 PageLoad
+0:00:02 Tab5 FinishNav20
+0:00:02 Tab6 FinishNav21
+0:00:02 Tab5 PageLoad
+0:00:02 Tab6 PageLoad
+0:00:02 Tab6 FinishNav17
+0:00:03 Tab6 PageLoad
+0:00:03 Tab6 StartNav24 #typed
+0:00:03 Tab6 FinishNav24
+0:00:06 Tab6 PageLoad
+0:00:11 Tab6 StartNav25 #renderer-script #link
+0:00:11 Tab6 FinishNav25
+0:00:12 Tab6 StartNav27 #typed
+0:00:12 Tab6 FinishNav27
+0:00:14 Tab6 PageLoad
+0:00:14 Tab6 StartNav31 #typed
+0:00:15 Tab6 StartNav32 #renderer-script #link
+0:00:15 Tab6 FinishNav32
+0:00:15 Tab6 FinishNav31
+0:00:15 Tab6 PageLoad
+0:00:16 Tab6 StartNav33 #renderer-script #link
+0:00:16 Tab6 FinishNav33
+0:00:19 Tab6 StartNav34 #renderer-script #link
+0:00:19 Tab6 FinishNav34
+0:00:23 TextSelectionChanged
+0:00:24 TextSelectionChanged
+0:00:27 Browser6 Close Tab6 at 0
+0:00:27 Widget Closed: BrowserWidget
+0:00:27 Browser5 Close Tab5 at 0
+0:00:27 Widget Closed: BrowserWidget
+0:00:27 Browser4 Close Tab4 at 0
+0:00:27 Widget Closed: BrowserWidget
+0:00:27 Browser3 Close Tab3 at 0
+0:00:27 Widget Closed: BrowserWidget
+0:00:27 Browser2 Close Tab2 at 0
+0:00:27 Widget Closed: BrowserWidget
+0:00:27 Browser1 Close Tab1 at 0
+0:00:27 Widget Closed: BrowserWidget
+0:00:27 Widget Closed: BrowserWidget

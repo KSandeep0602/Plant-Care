@@ -1,104 +1,79 @@
 import cron from "node-cron";
-import { connectDB } from "@/app/lib/mongodb";
-import Reminder from "@/app/models/Reminder";
-import twilio from "twilio";
-import { calculateNextWatering } from "@/app/lib/smartWatering";
+import { runPythonReminderSender } from "@/app/lib/pythonReminderSender";
+import { open, unlink, stat } from "fs/promises";
+import os from "os";
+import path from "path";
 
-function normalizeWhatsAppAddress(value: string) {
-  const v = String(value || "").trim();
-  if (!v) return "";
-  return v.startsWith("whatsapp:") ? v : `whatsapp:${v}`;
+type GlobalCronState = {
+  __plantCareCronStarted?: boolean;
+  __plantCareReminderJobInProgress?: boolean;
+};
+
+const cronState = globalThis as GlobalCronState;
+const cronLockPath = path.join(os.tmpdir(), "plantcare-reminder-cron.lock");
+
+if (typeof cronState.__plantCareCronStarted === "undefined") {
+  cronState.__plantCareCronStarted = false;
 }
-
-// Check if we already sent a reminder for this plant today
-function hasReminderBeenSentToday(lastSentDate: Date | null): boolean {
-  if (!lastSentDate) return false;
-
-  const today = new Date();
-  const lastSent = new Date(lastSentDate);
-
-  return (
-    today.getFullYear() === lastSent.getFullYear() &&
-    today.getMonth() === lastSent.getMonth() &&
-    today.getDate() === lastSent.getDate()
-  );
+if (typeof cronState.__plantCareReminderJobInProgress === "undefined") {
+  cronState.__plantCareReminderJobInProgress = false;
 }
-
-let isCronRunning = false; // 🔥 Prevent multiple cron instances
 
 export function startCron() {
-  if (isCronRunning) return;
-  isCronRunning = true;
+  if (cronState.__plantCareCronStarted) return;
 
-  cron.schedule("* * * * *", async () => {
-    console.log("⏰ Cron running: Checking WhatsApp reminders");
+  cronState.__plantCareCronStarted = true;
+
+  let lockHandle: Awaited<ReturnType<typeof open>> | null = null;
+
+  const acquireLock = async () => {
+    try {
+      const s = await stat(cronLockPath);
+      if (Date.now() - s.mtimeMs > 15 * 60 * 1000) {
+        await unlink(cronLockPath).catch(() => undefined);
+      }
+    } catch {
+      // no existing lock
+    }
 
     try {
-      const { TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN, TWILIO_WHATSAPP_FROM } = process.env;
-      if (!TWILIO_ACCOUNT_SID || !TWILIO_AUTH_TOKEN || !TWILIO_WHATSAPP_FROM) {
-        console.error("❌ Twilio env variables missing");
+      lockHandle = await open(cronLockPath, "wx");
+      await lockHandle.writeFile(String(process.pid));
+      return true;
+    } catch {
+      return false;
+    }
+  };
+
+  acquireLock().then((locked) => {
+    if (!locked) {
+      cronState.__plantCareCronStarted = false;
+      console.log("⏭️ Reminder cron already active in another process");
+      return;
+    }
+
+    cron.schedule("* * * * *", async () => {
+      if (cronState.__plantCareReminderJobInProgress) {
+        console.log("⏭️ Skipping cron tick: previous reminder job still running");
         return;
       }
 
-      await connectDB();
+      cronState.__plantCareReminderJobInProgress = true;
+      console.log("⏰ Cron running: Checking WhatsApp reminders (Python/Selenium)");
 
-      const client = twilio(
-        TWILIO_ACCOUNT_SID,
-        TWILIO_AUTH_TOKEN
-      );
+      try {
+        const result = await runPythonReminderSender();
 
-      const reminders = await Reminder.find({ completed: false });
-
-      const now = new Date();
-
-      for (const reminder of reminders) {
-        if (
-          reminder.nextWateringDate &&
-          now >= new Date(reminder.nextWateringDate)
-        ) {
-          // Check if we already sent a reminder for this plant today
-          if (hasReminderBeenSentToday(reminder.lastReminderSentDate)) {
-            console.log(`⏰ Skipping ${reminder.plantName} - already sent reminder today`);
-            continue;
-          }
-
-          console.log(`🔔 Attempting reminder for ${reminder.plantName}`);
-
-          const from = normalizeWhatsAppAddress(TWILIO_WHATSAPP_FROM);
-          const to = normalizeWhatsAppAddress(reminder.phone);
-
-          if (!to) {
-            console.error("❌ Missing reminder phone; skipping", reminder._id);
-            continue;
-          }
-
-          try {
-            const message = await client.messages.create({
-              from,
-              to,
-              body: `🌱 Time to water your ${reminder.plantName} 💧`,
-            });
-
-            console.log("✅ Message sent. SID:", message.sid);
-
-            // 🔁 Update next watering date
-            const newNextDate = calculateNextWatering(
-              reminder.frequencyPerWeek || 1
-            );
-
-            reminder.nextWateringDate = newNextDate;
-            reminder.whatsappSent = true;
-            reminder.lastReminderSentDate = new Date();
-            await reminder.save();
-
-          } catch (twilioError: any) {
-            console.error("❌ Twilio Error:", twilioError.message);
-          }
+        if (result.success) {
+          console.log(`✅ ${result.message}`);
+        } else {
+          console.error(`❌ ${result.message}: ${result.error}`);
         }
+      } catch (error: any) {
+        console.error("❌ Cron Error:", error.message);
+      } finally {
+        cronState.__plantCareReminderJobInProgress = false;
       }
-
-    } catch (error: any) {
-      console.error("❌ Cron Error:", error.message);
-    }
+    });
   });
 }
